@@ -3,17 +3,17 @@
 
 typedef struct pdata{
     long long int id;
-    char BSSID[0x15];
-    char PWR[0x8];
-    char BEACONS[0xc];
+    uint8_t BSSID[0x13];
+    int8_t PWR;
+    unsigned int BEACONS;
     char *ESSID;
+    struct pdata * prev;
+    struct pdata * next;
+    unsigned int flag;
 
-} __attribute__((__packed__)) pdata;
+} pdata;
 
-typedef struct manage_st{
-    pdata * next;
-    pdata * data;
-} __attribute__((__packed__)) manage_st;
+
 
 
 

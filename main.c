@@ -1,6 +1,16 @@
 #include "airodump.h"
+#include<signal.h>
 
+pdata *head;
+pcap_t* pcap;
+void sig_handler(int signum){
+
+  pcap_close(pcap);
+  cleanup();
+  exit(-1);
+}
 int main(int argc, char* argv[]){
+  signal(SIGINT,sig_handler);
     uint8_t *interface_;
     uint8_t errbuf[PCAP_ERRBUF_SIZE];
 	
@@ -10,7 +20,7 @@ int main(int argc, char* argv[]){
         exit(-1);
     }
     interface_ = argv[1];
-    pcap_t* pcap = pcap_open_live(interface_, BUFSIZ, 1, 1000, errbuf);
+    pcap = pcap_open_live(interface_, BUFSIZ, 1, 1000, errbuf);
 
     if (pcap == NULL) {
 		fprintf(stderr, "pcap_open_live(%s) return null - %s\n", interface_, errbuf);
@@ -23,7 +33,7 @@ int main(int argc, char* argv[]){
 		if (res == PCAP_ERROR || res == PCAP_ERROR_BREAK) {
 			printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(pcap));
 		}
-    printf("hello\n");
+    
 		airodump(packet);
         
     }
