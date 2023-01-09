@@ -6,6 +6,7 @@ void airodump(const uint8_t * packet){
  BeaconFrame *BF = (BeaconFrame *)(packet + rdt_headr->it_len);
  
  if(BF->type != 0x80) return ; // packet filter
+ //if((BF->type>>4) != 0x8) return ; // packet filter
  pdata *temp = find((*(unsigned long long int*)(BF->bssid)) & 0xffffffffffff);
  
  if(temp){
@@ -48,18 +49,25 @@ void add(pdata *new_node,char flag){
     if(!head){
         head = new_node;
     }else if (flag && new_node->flag > 20){
-        pdata * prev = new_node->prev;
-        prev->next = new_node->next;
+        if (new_node == head) return;
         
+        new_node->prev->next = new_node->next;
+        if(new_node->next)
+            new_node->next->prev = new_node->prev;
+
         new_node->next = head;
-        //new_node->prev = 0;
+        new_node->prev = head->prev;
         head->prev = new_node;
         head = new_node;
         new_node->flag=0;
     }else if (flag == 0){
-        new_node->next = head;
-        head->prev = new_node;
-        head = new_node;
+        pdata * temp = head;
+        while(temp->next){
+            temp = temp->next;
+        }
+        new_node->next = temp->next;
+        temp->next = new_node;
+        new_node->prev = temp;
     }
     new_node->flag ++;
 }
@@ -89,12 +97,13 @@ void cleanup(pdata *new_node){
     if(!head){
         return;
     }else{
-        temp = head;
-        while(temp != 0){
+        
+        while(head != 0){
+            temp = head;
             if(!temp->ESSID){
                 free(temp->ESSID);
             }
-        temp = temp->next;
+        head = temp->next;
         free(temp);
         
         }
