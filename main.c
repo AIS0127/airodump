@@ -1,5 +1,5 @@
 #include "airodump.h"
-#include<signal.h>
+
 
 pdata *head;
 pcap_t* pcap;
@@ -10,10 +10,13 @@ void sig_handler(int signum){
   exit(-1);
 }
 int main(int argc, char* argv[]){
+
   signal(SIGINT,sig_handler);
     uint8_t *interface_;
     uint8_t errbuf[PCAP_ERRBUF_SIZE];
-	
+    uint8_t channel = 0;
+    char *channel_cmd = "sudo iwconfig %s channel %u";
+    char cmd[100] = {0,};
 
     if(argc != 2 ){
         printf("usage : airodump <interface>\n");
@@ -33,8 +36,11 @@ int main(int argc, char* argv[]){
 		if (res == PCAP_ERROR || res == PCAP_ERROR_BREAK) {
 			printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(pcap));
 		}
-    
-		airodump(packet);
+    sprintf(cmd,channel_cmd,interface_,channel);
+    system(cmd);
+    sleep(0.1);
+    channel = (channel +1) % 14 + 1;
+		airodump(packet,channel);
         
     }
     pcap_close(pcap);

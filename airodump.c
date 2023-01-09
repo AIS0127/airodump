@@ -1,7 +1,7 @@
 #include "airodump.h"
 #include "structs.h"
 
-void airodump(const uint8_t * packet){
+void airodump(const uint8_t * packet,uint8_t channel){
  radiotap_header *rdt_headr = (radiotap_header *)packet;
  BeaconFrame *BF = (BeaconFrame *)(packet + rdt_headr->it_len);
  
@@ -21,12 +21,17 @@ void airodump(const uint8_t * packet){
  temp->BEACONS = 1;
  temp->ESSID = (char *)malloc(BF->tag_data.len+1);
  memcpy(temp->ESSID,BF->tag_data.data,BF->tag_data.len);
-
+ unsigned int offset =0 ;
+//  while ((BF->tag_data + offset) < (packet + *(packet+8))){
+//     if(((tagged_parameter)BF->tag_data).num == 0xDD && ((tagged_parameter)BF->tag_data).len >= 0x8){
+        
+//     }
+//  }
 
  add(temp,0);
  }
 
- print();
+ print(channel);
 }
 
 pdata* find(long long int id){
@@ -72,7 +77,7 @@ void add(pdata *new_node,char flag){
     new_node->flag ++;
 }
 
-void print(){
+void print(uint8_t channel){
     pdata * temp;
     char cnt=0;
     
@@ -80,9 +85,11 @@ void print(){
     if(!head){
         return;
     }else{
+
         temp = head;
+        printf("CH %u ]\n\n",channel);
         printf("%-19s%-5s%-11s%s\n","BSSID","PWR","Beacons","ESSID");
-        while(temp != 0 && cnt < 15){
+        while(temp != 0 && cnt < 30){
           printf("%-19s%-5d%-11d%s\n",temp->BSSID,temp->PWR,temp->BEACONS,temp->ESSID);
           temp = temp->next;
           cnt ++;
